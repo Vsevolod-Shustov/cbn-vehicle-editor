@@ -105,7 +105,7 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
 
     // Copy locations from references
     flat.forEach((part) => {
-      if (!part.location) {
+      if (!part.location && !part.abstract) {
         part.location = copyLocationFromReferences(flat, part.id)
       }
     })
@@ -121,11 +121,13 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
 
   const copyLocationFromReferences = (flatData: DataFlatArray, id?: string): string | undefined => {
     const part = flatData.find((p) => p.id === id || p.abstract === id)
-    console.log('part: ' + part?.id)
+    const partIdOrAbstract = part?.id || part?.abstract || null
+    console.log('part: ' + partIdOrAbstract)
     if (part) {
       // If the part has a location, return it
       if (part.location) {
-        console.log('found location field on part: ' + part.id)
+        console.log('found location field on part: ' + partIdOrAbstract)
+        console.log('======')
         return part.location
       }
       // If it has "copy-from" field, recurse
