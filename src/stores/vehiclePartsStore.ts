@@ -1,8 +1,6 @@
-// stores/vehiclePartsStore.ts
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-// Base URL and file list
 const BASE_URL =
   'https://raw.githubusercontent.com/cataclysmbn/Cataclysm-BN/refs/heads/main/data/json/vehicleparts/'
 const fileNames = [
@@ -50,7 +48,7 @@ const fileNames = [
   'wheel',
   'windshields',
   'wings',
-] as const
+]
 
 type Part = {
   id?: string
@@ -79,7 +77,6 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       return await resp.json()
     })
 
-    // Use allSettled to tolerate per-file failures
     const results = await Promise.allSettled(promises)
 
     const flat: DataFlatArray = []
@@ -89,12 +86,8 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       if (r.status === 'fulfilled') {
         // Flatten
         const items = r.value as Part[]
-        // Filter out parts with an abstract field
         flat.push(...items)
         items.forEach((part: any) => {
-          //console.log(part)
-          //console.log(part?.id)
-          //console.log(part?.location)
           const loc = part?.location ?? null
           if (loc) partLocations.value.add(loc)
         })
@@ -103,7 +96,6 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       }
     })
 
-    // Copy locations from references
     flat.forEach((part) => {
       if (!part.location && !part.abstract) {
         part.location = copyLocationFromReferences(flat, part.id)
@@ -111,9 +103,7 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
     })
 
     data.value = flat
-    console.log('loaded ' + flat.length + ' parts')
-    //console.log(flat)
-    //console.log('locations: ' + partLocations.value.toString())
+    //console.log('loaded ' + flat.length + ' parts')
     if (errors.length) error.value = errors.join('; ')
 
     loading.value = false
@@ -121,23 +111,20 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
 
   const copyLocationFromReferences = (flatData: DataFlatArray, id?: string): string | undefined => {
     const part = flatData.find((p) => p.id === id || p.abstract === id)
-    const partIdOrAbstract = part?.id || part?.abstract || null
-    console.log('part: ' + partIdOrAbstract)
+    //const partIdOrAbstract = part?.id || part?.abstract || null
+    //console.log('part: ' + partIdOrAbstract)
     if (part) {
-      // If the part has a location, return it
       if (part.location) {
-        console.log('found location field on part: ' + partIdOrAbstract)
-        console.log('======')
+        //console.log('found location field on part: ' + partIdOrAbstract)
+        //console.log('======')
         return part.location
       }
-      // If it has "copy-from" field, recurse
       if (part['copy-from']) {
-        console.log('continuing lookup to ' + part['copy-from'])
-        console.log('======')
+        //console.log('continuing lookup to ' + part['copy-from'])
+        //console.log('======')
         return copyLocationFromReferences(flatData, part['copy-from'])
       }
     }
-    // Return undefined if no location found
     return undefined
   }
 
