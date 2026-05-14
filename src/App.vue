@@ -4,6 +4,7 @@ import SingleTile from './views/SingleTile.vue'
 import PartsList from './views/PartsList.vue'
 import { useVehiclePartsStore } from './stores/vehiclePartsStore'
 import { onMounted } from 'vue'
+import Loading from './components/Loading.vue'
 
 const store = useVehiclePartsStore()
 
@@ -16,16 +17,13 @@ onMounted(() => {
 
 <template>
   <main>
-    <VehiclePreview></VehiclePreview>
-    <SingleTile></SingleTile>
-    <PartsList></PartsList>
-    <!-- <div v-if="store.loading">Loading parts...</div>
+    <div v-if="store.loading"><Loading /></div>
     <div v-else-if="store.error">Error: {{ store.error }}</div>
-    <ul v-else>
-      <li v-for="(part, idx) in store.data" :key="idx">
-        {{ part }}
-      </li>
-    </ul> -->
+    <template v-else>
+      <VehiclePreview></VehiclePreview>
+      <SingleTile></SingleTile>
+      <PartsList></PartsList>
+    </template>
   </main>
 </template>
 
