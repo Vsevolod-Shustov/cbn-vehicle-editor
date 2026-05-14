@@ -1,4 +1,34 @@
-<!-- components/VehiclePartsPanel.vue -->
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
+
+const store = useVehiclePartsStore()
+const locationList = store.partLocations ?? null
+
+const selectedLocation = ref<string | null>(null)
+
+function selectLocation(loc: string) {
+  selectedLocation.value = loc
+}
+
+function clearLocation() {
+  selectedLocation.value = null
+}
+
+const filteredParts = computed(() => {
+  if (!store.data || store.data.length === 0) return []
+  if (!selectedLocation.value)
+    return store.data.filter((p: any) => {
+      return p?.abstract ? false : true
+    })
+
+  return store.data.filter((p: any) => {
+    const loc = (p?.location ?? null) as string | null
+    return loc ? loc === selectedLocation.value && !p?.abstract : false
+  })
+})
+</script>
+
 <template>
   <div class="partsList">
     <div class="filters" aria-label="filter by location">
@@ -13,46 +43,12 @@
       </button>
     </div>
     <ul>
-      <li v-for="(part, idx) in filteredParts" :key="idx">
-        {{ part?.id ?? idx }}
+      <li v-for="part in filteredParts" :key="part.id">
+        {{ part?.id }}
       </li>
     </ul>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
-
-// Init store and locations
-const store = useVehiclePartsStore()
-const locationList = store.partLocations ?? null
-
-const selectedLocation = ref<string | null>(null)
-
-function selectLocation(loc: string) {
-  selectedLocation.value = loc
-}
-
-function clearLocation() {
-  selectedLocation.value = null
-}
-
-// Filtered view: show parts that either have no location requirement
-// or match the selected location. Assumes part.location or part.loc fields.
-const filteredParts = computed(() => {
-  if (!store.data || store.data.length === 0) return []
-  if (!selectedLocation.value)
-    return store.data.filter((p: any) => {
-      return p?.abstract ? false : true
-    })
-
-  return store.data.filter((p: any) => {
-    const loc = (p?.location ?? null) as string | null
-    return loc ? loc === selectedLocation.value && !p?.abstract : false
-  })
-})
-</script>
 
 <style scoped>
 .partsList {
