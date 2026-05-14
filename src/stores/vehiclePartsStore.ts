@@ -102,7 +102,7 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       }
     })
 
-    data.value = flat
+    data.value = flat.sort((a, b) => (a?.id || '').localeCompare(b?.id || ''))
     //console.log('loaded ' + flat.length + ' parts')
     if (errors.length) error.value = errors.join('; ')
 
