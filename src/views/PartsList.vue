@@ -17,16 +17,21 @@ function clearLocation() {
 
 const filteredParts = computed(() => {
   if (!store.data || store.data.length === 0) return []
-  if (!selectedLocation.value)
-    return store.data.filter((p: any) => {
-      return p?.abstract ? false : true
-    })
 
+  if (!selectedLocation.value) {
+    // When no location is selected, filter out parts with 'abstract'
+    return store.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
+  }
+
+  // When a location is selected, filter out 'abstract' parts and match location
   return store.data.filter((p: any) => {
-    const loc = (p?.location ?? null) as string | null
-    return loc ? loc === selectedLocation.value && !p?.abstract : false
+    if (p?.abstract) return false
+    const loc = p?.location ?? null
+    return loc === selectedLocation.value
   })
 })
+
+console.log(filteredParts.value.slice(0, 20))
 </script>
 
 <template>
