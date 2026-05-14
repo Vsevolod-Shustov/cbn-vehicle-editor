@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import sortSet from '@/helpers/sortSet'
 
 const BASE_URL =
   'https://raw.githubusercontent.com/cataclysmbn/Cataclysm-BN/refs/heads/main/data/json/vehicleparts/'
@@ -130,18 +131,6 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       }
     }
     return undefined
-  }
-
-  function sortSet(set: Set<any>) {
-    const entries = []
-    for (const member of set) {
-      entries.push(member)
-    }
-    set.clear()
-    for (const entry of entries.sort()) {
-      set.add(entry)
-    }
-    return set
   }
 
   return {
