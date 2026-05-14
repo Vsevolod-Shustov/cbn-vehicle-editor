@@ -104,6 +104,10 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
 
     data.value = flat.sort((a, b) => (a?.id || '').localeCompare(b?.id || ''))
     //console.log('loaded ' + flat.length + ' parts')
+
+    sortSet(partLocations.value)
+    //console.log(partLocations.value)
+
     if (errors.length) error.value = errors.join('; ')
 
     loading.value = false
@@ -126,6 +130,18 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
       }
     }
     return undefined
+  }
+
+  function sortSet(set: Set<any>) {
+    const entries = []
+    for (const member of set) {
+      entries.push(member)
+    }
+    set.clear()
+    for (const entry of entries.sort()) {
+      set.add(entry)
+    }
+    return set
   }
 
   return {
