@@ -6,19 +6,19 @@ import { useVehiclePartsStore } from './stores/vehiclePartsStore'
 import { onMounted } from 'vue'
 import Loading from './components/Loading.vue'
 
-const store = useVehiclePartsStore()
+const vehiclePartsStore = useVehiclePartsStore()
 
 onMounted(() => {
-  if (store.data.length === 0 && !store.loading) {
-    store.fetchData()
+  if (vehiclePartsStore.data.length === 0 && !vehiclePartsStore.loading) {
+    vehiclePartsStore.fetchData()
   }
 })
 </script>
 
 <template>
   <main>
-    <div v-if="store.loading"><Loading /></div>
-    <div v-else-if="store.error">Error: {{ store.error }}</div>
+    <div v-if="vehiclePartsStore.loading"><Loading /></div>
+    <div v-else-if="vehiclePartsStore.error">Error: {{ vehiclePartsStore.error }}</div>
     <template v-else>
       <VehiclePreview></VehiclePreview>
       <SingleTile></SingleTile>
