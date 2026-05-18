@@ -56,6 +56,10 @@ type Part = {
   location?: string
   abstract?: string
   'copy-from'?: string
+  flags?: string[]
+  delete?: {
+    flags?: string[]
+  }
 }
 
 type DataFlatArray = Part[]
@@ -85,52 +89,69 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
 
     results.forEach((r) => {
       if (r.status === 'fulfilled') {
-        // Flatten
         const items = r.value as Part[]
         flat.push(...items)
         items.forEach((part: any) => {
-          const loc = part?.location ?? null
-          if (loc) partLocations.value.add(loc)
+          if (part?.location) partLocations.value.add(part.location)
         })
       } else {
         errors.push((r.reason as Error)?.message ?? 'Unknown fetch error')
       }
     })
 
+    const resolveFromReferences = (id?: string) => {
+      const seen: string[] = []
+      let currentId = id
+      let resolvedLocation: string | undefined
+      const resolvedFlags: string[] = []
+      const accumulatedDeleteFlags: string[] = []
+
+      while (currentId && !seen.includes(currentId)) {
+        seen.push(currentId)
+        const part = flat.find((p) => p.id === currentId || p.abstract === currentId)
+        if (!part) break
+
+        if (!resolvedLocation && part.location) {
+          resolvedLocation = part.location
+        }
+
+        if (part.flags && part.flags.length > 0) {
+          resolvedFlags.push(...part.flags)
+        }
+
+        if (part.delete?.flags && part.delete.flags.length > 0) {
+          accumulatedDeleteFlags.push(...part.delete.flags)
+        }
+
+        currentId = part['copy-from']
+      }
+
+      const uniqueFlags = Array.from(new Set(resolvedFlags))
+
+      return {
+        location: resolvedLocation,
+        flags: uniqueFlags,
+        deleteFlags: Array.from(new Set(accumulatedDeleteFlags)),
+      }
+    }
+
     flat.forEach((part) => {
-      if (!part.location && !part.abstract) {
-        part.location = copyLocationFromReferences(flat, part.id)
+      const { location, flags, deleteFlags } = resolveFromReferences(part.id)
+      if (!part.location && location) part.location = location
+      if ((!part.flags || part.flags.length === 0) && flags?.length) part.flags = flags
+
+      const currentFlags = part.flags ? [...part.flags] : []
+      if (deleteFlags && deleteFlags.length > 0) {
+        const filtered = currentFlags.filter((f) => !deleteFlags.includes(f))
+        part.flags = filtered.length > 0 ? filtered : part.flags
       }
     })
 
     data.value = flat.sort((a, b) => (a?.id || '').localeCompare(b?.id || ''))
-    //console.log('loaded ' + flat.length + ' parts')
-
     sortSet(partLocations.value)
-    //console.log(partLocations.value)
 
     if (errors.length) error.value = errors.join('; ')
-
     loading.value = false
-  }
-
-  const copyLocationFromReferences = (flatData: DataFlatArray, id?: string): string | undefined => {
-    const part = flatData.find((p) => p.id === id || p.abstract === id)
-    //const partIdOrAbstract = part?.id || part?.abstract || null
-    //console.log('part: ' + partIdOrAbstract)
-    if (part) {
-      if (part.location) {
-        //console.log('found location field on part: ' + partIdOrAbstract)
-        //console.log('======')
-        return part.location
-      }
-      if (part['copy-from']) {
-        //console.log('continuing lookup to ' + part['copy-from'])
-        //console.log('======')
-        return copyLocationFromReferences(flatData, part['copy-from'])
-      }
-    }
-    return undefined
   }
 
   return {

@@ -6,6 +6,7 @@ const store = useVehiclePartsStore()
 const locationList = store.partLocations ?? null
 
 const selectedLocation = ref<string | null>(null)
+const showFoldableOnly = ref(false) // New ref for checkbox state
 
 function selectLocation(loc: string) {
   selectedLocation.value = loc
@@ -18,20 +19,22 @@ function clearLocation() {
 const filteredParts = computed(() => {
   if (!store.data || store.data.length === 0) return []
 
-  if (!selectedLocation.value) {
-    // When no location is selected, filter out parts with 'abstract'
-    return store.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
+  let parts = store.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
+
+  if (selectedLocation.value) {
+    parts = parts.filter((p: any) => {
+      const loc = p?.location ?? null
+      return loc === selectedLocation.value
+    })
   }
 
-  // When a location is selected, filter out 'abstract' parts and match location
-  return store.data.filter((p: any) => {
-    if (p?.abstract) return false
-    const loc = p?.location ?? null
-    return loc === selectedLocation.value
-  })
-})
+  if (showFoldableOnly.value) {
+    parts = parts.filter((p: any) => p?.flags?.includes('FOLDABLE'))
+  }
 
-console.log(filteredParts.value.slice(0, 20))
+  console.log(parts)
+  return parts
+})
 </script>
 
 <template>
@@ -46,6 +49,12 @@ console.log(filteredParts.value.slice(0, 20))
       >
         {{ loc }}
       </button>
+      <div>
+        <label>
+          <input type="checkbox" v-model="showFoldableOnly" />
+          Show only foldable parts
+        </label>
+      </div>
     </div>
     <ul>
       <li v-for="part in filteredParts" :key="part.id">
