@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
 import { useVehicleStore } from '@/stores/vehicleStore'
 
@@ -6,20 +7,23 @@ const vehiclePartsStore = useVehiclePartsStore()
 const vehicleStore = useVehicleStore()
 
 const locations = vehiclePartsStore.partLocations
-
 const vehicleTiles = vehicleStore.vehicleTiles
-
 const selectedTile = '0 0'
 
-//console.log(vehicleTiles.get(selectedTile)?.parts.get('structure'))
+// Non-empty locations for the current tile
+const nonEmptyLocations = computed(() => {
+  const partsMap = vehicleTiles.get(selectedTile)?.parts
+  if (!partsMap) return [] as string[]
+  return Array.from(locations).filter((loc) => !!partsMap.get(loc))
+})
 </script>
 
 <template>
   <div class="singleTile">
-    <div class="location" v-for="loc in locations" :key="loc">
+    <div class="location" v-for="loc in nonEmptyLocations" :key="loc">
       <div class="header">{{ loc }}</div>
-      <div class="part" :class="{ empty: !vehicleTiles.get(selectedTile)?.parts.get(loc) }">
-        {{ vehicleTiles.get(selectedTile)?.parts.get(loc) || 'empty' }}
+      <div class="part">
+        {{ vehicleTiles.get(selectedTile)?.parts.get(loc) }}
       </div>
     </div>
   </div>

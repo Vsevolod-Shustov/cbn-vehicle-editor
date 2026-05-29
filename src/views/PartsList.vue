@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
+import { useVehicleStore } from '@/stores/vehicleStore'
+import type { Part } from '@/stores/vehiclePartsStore'
 
-const store = useVehiclePartsStore()
-const locationList = store.partLocations ?? null
+const vehiclePartsStore = useVehiclePartsStore()
+const vehicleStore = useVehicleStore()
+
+const locationList = vehiclePartsStore.partLocations ?? null
 
 const selectedLocation = ref<string | null>(null)
 const showFoldableOnly = ref(false) // New ref for checkbox state
@@ -17,9 +21,9 @@ function clearLocation() {
 }
 
 const filteredParts = computed(() => {
-  if (!store.data || store.data.length === 0) return []
+  if (!vehiclePartsStore.data || vehiclePartsStore.data.length === 0) return []
 
-  let parts = store.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
+  let parts = vehiclePartsStore.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
 
   if (selectedLocation.value) {
     parts = parts.filter((p: any) => {
@@ -35,6 +39,10 @@ const filteredParts = computed(() => {
   console.log(parts)
   return parts
 })
+
+function handlePartClick(part: Part) {
+  console.log(part)
+}
 </script>
 
 <template>
@@ -57,7 +65,7 @@ const filteredParts = computed(() => {
       </div>
     </div>
     <ul>
-      <li v-for="part in filteredParts" :key="part.id">
+      <li v-for="part in filteredParts" :key="part.id" class="part" @click="handlePartClick(part)">
         {{ part?.id }}
       </li>
     </ul>
@@ -69,6 +77,9 @@ const filteredParts = computed(() => {
   flex: 0 1 350px;
   height: 100vh;
   overflow-y: scroll;
+}
+.part {
+  cursor: pointer;
 }
 ul {
   padding: 0;

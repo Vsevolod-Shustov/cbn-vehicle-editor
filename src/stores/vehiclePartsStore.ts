@@ -162,3 +162,5 @@ export const useVehiclePartsStore = defineStore('vehicleParts', () => {
     fetchData,
   }
 })
+
+export type { Part }
