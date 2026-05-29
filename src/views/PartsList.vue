@@ -8,8 +8,13 @@ const vehiclePartsStore = useVehiclePartsStore()
 const vehicleStore = useVehicleStore()
 
 const locationList = vehiclePartsStore.partLocations ?? null
+locationList?.add('NO_LOCATION_FUCK_YOU')
+console.log(locationList)
+
+const vehicleTiles = vehicleStore.vehicleTiles
 
 const selectedLocation = ref<string | null>(null)
+const selectedTile = vehicleStore.selectedTile
 const showFoldableOnly = ref(false) // New ref for checkbox state
 
 function selectLocation(loc: string) {
@@ -20,12 +25,24 @@ function clearLocation() {
   selectedLocation.value = null
 }
 
+function checkInstalledInLocation(location: string) {
+  return vehicleTiles.get(selectedTile)?.parts.has(location)
+}
+
 const filteredParts = computed(() => {
+  console.log('selectedLocation.value: ' + selectedLocation.value)
+
   if (!vehiclePartsStore.data || vehiclePartsStore.data.length === 0) return []
 
   let parts = vehiclePartsStore.data.filter((p: any) => !p?.abstract && p?.type !== 'json_flag')
 
-  if (selectedLocation.value) {
+  if (selectedLocation.value == 'NO_LOCATION_FUCK_YOU') {
+    parts = parts.filter((p: any) => {
+      const loc = p?.location ?? null
+      console.log('loc:', loc, 'type:', typeof loc)
+      return loc === null
+    })
+  } else if (selectedLocation.value) {
     parts = parts.filter((p: any) => {
       const loc = p?.location ?? null
       return loc === selectedLocation.value
@@ -41,7 +58,15 @@ const filteredParts = computed(() => {
 })
 
 function handlePartClick(part: Part) {
-  console.log(part)
+  console.log(part.location)
+  const location = part.location ?? part.id ?? ''
+  const tile = vehicleTiles.get(selectedTile)
+  if (!tile) return
+  if (tile.parts.get(location)) {
+    tile.parts.delete(location)
+  } else {
+    vehicleStore.addPart(vehicleStore.selectedTile, location, part.id ?? '')
+  }
 }
 </script>
 
@@ -65,7 +90,17 @@ function handlePartClick(part: Part) {
       </div>
     </div>
     <ul>
-      <li v-for="part in filteredParts" :key="part.id" class="part" @click="handlePartClick(part)">
+      <li
+        v-for="part in filteredParts"
+        :key="part.id"
+        class="part"
+        :class="{
+          installed:
+            selectedLocation == 'NO_LOCATION_FUCK_YOU' &&
+            vehicleTiles.get(selectedTile)?.parts.has(part.location ?? part.id ?? ''),
+        }"
+        @click="handlePartClick(part)"
+      >
         {{ part?.id }}
       </li>
     </ul>
@@ -102,5 +137,8 @@ li {
 }
 .filters button.active {
   background-color: deepskyblue;
+}
+.installed {
+  font-weight: bold;
 }
 </style>

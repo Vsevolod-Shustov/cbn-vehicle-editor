@@ -8,20 +8,28 @@ const vehicleStore = useVehicleStore()
 
 const locations = vehiclePartsStore.partLocations
 const vehicleTiles = vehicleStore.vehicleTiles
-const selectedTile = '0 0'
+const selectedTile = vehicleStore.selectedTile
 
-// Non-empty locations for the current tile
 const nonEmptyLocations = computed(() => {
   const partsMap = vehicleTiles.get(selectedTile)?.parts
   if (!partsMap) return [] as string[]
   return Array.from(locations).filter((loc) => !!partsMap.get(loc))
 })
+
+const removePart = (tileKey: string, location: string) => {
+  const tile = vehicleTiles.get(tileKey)
+  if (!tile) return
+  tile.parts.delete(location)
+}
 </script>
 
 <template>
   <div class="singleTile">
     <div class="location" v-for="loc in nonEmptyLocations" :key="loc">
-      <div class="header">{{ loc }}</div>
+      <div class="header">
+        {{ loc }}
+        <button @click="removePart(selectedTile, loc)">X</button>
+      </div>
       <div class="part">
         {{ vehicleTiles.get(selectedTile)?.parts.get(loc) }}
       </div>
@@ -44,6 +52,11 @@ const nonEmptyLocations = computed(() => {
 }
 .header {
   font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+button {
+  cursor: pointer;
 }
 .location:has(.empty) {
   opacity: 33%;
