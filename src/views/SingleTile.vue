@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
-import { useVehicleTilesStore } from '@/stores/vehicleTilesStore'
+import { useVehicleStore } from '@/stores/vehicleStore'
 
 const vehiclePartsStore = useVehiclePartsStore()
-const vehicleTilesStore = useVehicleTilesStore()
+const vehicleStore = useVehicleStore()
 
 const locations = vehiclePartsStore.partLocations
 
-const vehicleTiles = vehicleTilesStore.vehicleTiles
+const vehicleTiles = vehicleStore.vehicleTiles
 
 const selectedTile = '0 0'
 
@@ -28,6 +28,8 @@ const selectedTile = '0 0'
 <style scoped>
 .singleTile {
   flex: 0 1 300px;
+  height: 100vh;
+  overflow-y: scroll;
 }
 .location {
   list-style: none;

@@ -66,7 +66,9 @@ const filteredParts = computed(() => {
 
 <style scoped>
 .partsList {
-  flex: 0 1 300px;
+  flex: 0 1 350px;
+  height: 100vh;
+  overflow-y: scroll;
 }
 ul {
   padding: 0;
