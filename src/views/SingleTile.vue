@@ -26,7 +26,9 @@ const removePart = (tileKey: string, location: string) => {
 
 <template>
   <div class="singleTile">
-    <div>Selected tile: {{ selectedTile }}</div>
+    <div class="actions">
+      <span>Selected tile: {{ selectedTile }}</span>
+    </div>
     <div class="location" v-for="loc in nonEmptyLocations" :key="loc">
       <div class="header">
         {{ loc }}
@@ -62,5 +64,9 @@ button {
 }
 .location:has(.empty) {
   opacity: 33%;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
 }
 </style>

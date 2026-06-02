@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
 import { useVehicleStore } from '@/stores/vehicleStore'
 import type { Part } from '@/stores/vehiclePartsStore'
@@ -11,10 +12,8 @@ const locationList = vehiclePartsStore.partLocations ?? null
 locationList?.add('NO_LOCATION_FUCK_YOU')
 console.log(locationList)
 
-const vehicleTiles = vehicleStore.vehicleTiles
-
+const { vehicleTiles, selectedTile } = storeToRefs(vehicleStore)
 const selectedLocation = ref<string | null>(null)
-const selectedTile = vehicleStore.selectedTile
 const showFoldableOnly = ref(false) // New ref for checkbox state
 
 function selectLocation(loc: string) {
@@ -26,7 +25,7 @@ function clearLocation() {
 }
 
 function checkInstalledInLocation(location: string) {
-  return vehicleTiles.get(selectedTile)?.parts.has(location)
+  return vehicleTiles.value.get(selectedTile.value)?.parts.has(location)
 }
 
 const filteredParts = computed(() => {
@@ -53,14 +52,14 @@ const filteredParts = computed(() => {
     parts = parts.filter((p: any) => p?.flags?.includes('FOLDABLE'))
   }
 
-  console.log(parts)
+  //console.log(parts)
   return parts
 })
 
 function handlePartClick(part: Part) {
   console.log(part.location)
   const location = part.location ?? part.id ?? ''
-  const tile = vehicleTiles.get(selectedTile)
+  const tile = vehicleTiles.value.get(selectedTile.value)
   if (!tile) return
   if (tile.parts.get(location)) {
     tile.parts.delete(location)

@@ -14,8 +14,22 @@
         @click="handleTileClick(coords)"
       >
         <span class="coords">{{ coords }}</span>
+        <span class="parts-count">{{ tile.parts.size }}</span>
       </div>
     </section>
+    <div class="action-row">
+      <button @click.stop="addNeighbor('left')" class="btn">Left</button>
+      <button @click.stop="addNeighbor('right')" class="btn">Right</button>
+      <button @click.stop="addNeighbor('up')" class="btn">Up</button>
+      <button @click.stop="addNeighbor('down')" class="btn">Down</button>
+      <button
+        @click.stop="confirmRemoveSelected"
+        class="btn danger"
+        :style="{ 'margin-left': 'auto' }"
+      >
+        Remove
+      </button>
+    </div>
   </div>
 </template>
 
@@ -39,6 +53,13 @@ const grid = ref<HTMLElement | null>(null)
 // Tile size (in pixels)
 const TILE = 32
 
+const minX = computed(() =>
+  Math.min(0, ...tileEntries.value.map(([coords]) => Number(coords.split(' ')[0]))),
+)
+const minY = computed(() =>
+  Math.min(0, ...tileEntries.value.map(([coords]) => Number(coords.split(' ')[1]))),
+)
+
 const maxX = computed(() =>
   Math.max(0, ...tileEntries.value.map(([coords]) => Number(coords.split(' ')[0]))),
 )
@@ -48,8 +69,8 @@ const maxY = computed(() =>
 
 const gridStyle = computed<CSSProperties>(() => ({
   position: 'relative',
-  width: `${(maxX.value + 1) * TILE}px`,
-  height: `${(maxY.value + 1) * TILE}px`,
+  width: `${(maxX.value - minX.value + 1) * TILE}px`,
+  height: `${(maxY.value - minY.value + 1) * TILE}px`,
   overflow: 'hidden',
 }))
 
@@ -58,12 +79,16 @@ const tileStyle = (coords: string): CSSProperties => {
   const x = Number(parts[0] ?? 0)
   const y = Number(parts[1] ?? 0)
 
+  // Shift by minX/minY so grid origin is at (minX, minY)
+  const sx = (x - minX.value) * TILE
+  const sy = (y - minY.value) * TILE
+
   return {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    left: `${x * TILE}px`,
-    top: `${y * TILE}px`,
+    left: `${sx}px`,
+    top: `${sy}px`,
     width: `${TILE}px`,
     height: `${TILE}px`,
   }
@@ -73,7 +98,9 @@ const tileStyle = (coords: string): CSSProperties => {
 const offset = ref({ x: 0, y: 0 })
 
 function centerOnSelected() {
-  const [sx, sy] = selectedTile.value.split(' ').map((n) => Number(n) || 0)
+  const [sxRaw, syRaw] = selectedTile.value.split(' ')
+  const sx = Number(sxRaw ?? 0)
+  const sy = Number(syRaw ?? 0)
 
   // container center (wrap may resize; measure grid size for centering)
   const wrapEl = wrap.value
@@ -124,14 +151,29 @@ watch(
 )
 
 function handleTileClick(coords: string) {
-  console.log(typeof coords)
+  //console.log(typeof coords)
   selectedTile.value = coords
+}
+
+function addNeighbor(direction: 'left' | 'right' | 'up' | 'down') {
+  console.log('addNeighbor click handler')
+  store.addNeighborIfMissing(direction)
+}
+
+function confirmRemoveSelected() {
+  const key = selectedTile.value
+  if (!key) return
+  const ok = window.confirm(`Remove tile ${key}? This cannot be undone.`)
+  if (ok) {
+    store.removeTile(key)
+  }
 }
 </script>
 
 <style scoped>
 .vehiclePreview {
   flex: 1 1 auto;
+  position: relative;
 }
 .tile {
   border: 1px solid #2c2c2c;
@@ -149,5 +191,17 @@ function handleTileClick(coords: string) {
 }
 .tile.selected {
   border: 2px solid #2c2c2c;
+}
+.parts-count {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+.action-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
 }
 </style>

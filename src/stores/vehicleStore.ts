@@ -65,10 +65,48 @@ export const useVehicleStore = defineStore('vehicle', () => {
     tile.parts.delete(location)
   }
 
+  // Adds a neighbor tile if missing
+  function addNeighborIfMissing(direction: 'left' | 'right' | 'up' | 'down') {
+    console.log('attempting to add a part')
+    const [cxRaw, cyRaw] = selectedTile.value.split(' ')
+    const cx = Number(cxRaw ?? 0)
+    const cy = Number(cyRaw ?? 0)
+    let nx = cx
+    let ny = cy
+    if (direction === 'left') nx = cx - 1
+    if (direction === 'right') nx = cx + 1
+    if (direction === 'up') ny = cy - 1
+    if (direction === 'down') ny = cy + 1
+
+    const key = `${nx} ${ny}`
+    if (!vehicleTiles.value.has(key)) {
+      let tile: VehicleTile = {
+        id: key,
+        parts: new Map([['structure', 'frame_cross']]),
+      }
+      vehicleTiles.value.set(key, tile)
+    }
+  }
+
+  // Removes a tile from vehicleTiles by key and clears selection if needed
+  const removeTile = (key: string) => {
+    if (!vehicleTiles.value.has(key)) return
+
+    vehicleTiles.value.delete(key)
+
+    // If the removed tile was the selected one, clear or pick a fallback
+    if (selectedTile.value === key) {
+      // Optional: clear selection or pick another existing tile
+      selectedTile.value = ''
+    }
+  }
+
   return {
     selectedTile,
     vehicleTiles,
     addPart,
     removePart,
+    addNeighborIfMissing,
+    removeTile,
   }
 })
