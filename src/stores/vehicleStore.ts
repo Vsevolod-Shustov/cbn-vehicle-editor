@@ -8,13 +8,34 @@ type VehicleTile = {
 }
 
 export const useVehicleStore = defineStore('vehicle', () => {
-  const selectedTile = '0 0'
+  const selectedTile = ref<string>('0 0')
   const vehicleTiles = ref<Map<string, VehicleTile>>(
     new Map([
       [
         '0 0',
         {
           id: '0 0',
+          parts: new Map([['structure', 'frame_cross']]),
+        },
+      ],
+      [
+        '0 1',
+        {
+          id: '0 1',
+          parts: new Map([['structure', 'frame_cross']]),
+        },
+      ],
+      [
+        '1 0',
+        {
+          id: '1 0',
+          parts: new Map([['structure', 'frame_cross']]),
+        },
+      ],
+      [
+        '1 1',
+        {
+          id: '1 1',
           parts: new Map([['structure', 'frame_cross']]),
         },
       ],
