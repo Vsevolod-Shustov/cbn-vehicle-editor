@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useVehiclePartsStore } from '@/stores/vehiclePartsStore'
 import { useVehicleStore } from '@/stores/vehicleStore'
 
@@ -7,17 +8,17 @@ const vehiclePartsStore = useVehiclePartsStore()
 const vehicleStore = useVehicleStore()
 
 const locations = vehiclePartsStore.partLocations
-const vehicleTiles = vehicleStore.vehicleTiles
-const selectedTile = vehicleStore.selectedTile
+
+const { vehicleTiles, selectedTile } = storeToRefs(vehicleStore)
 
 const nonEmptyLocations = computed(() => {
-  const partsMap = vehicleTiles.get(selectedTile)?.parts
+  const partsMap = vehicleTiles.value.get(selectedTile.value)?.parts
   if (!partsMap) return [] as string[]
   return Array.from(locations).filter((loc) => !!partsMap.get(loc))
 })
 
 const removePart = (tileKey: string, location: string) => {
-  const tile = vehicleTiles.get(tileKey)
+  const tile = vehicleTiles.value.get(tileKey)
   if (!tile) return
   tile.parts.delete(location)
 }
@@ -25,6 +26,7 @@ const removePart = (tileKey: string, location: string) => {
 
 <template>
   <div class="singleTile">
+    <div>Selected tile: {{ selectedTile }}</div>
     <div class="location" v-for="loc in nonEmptyLocations" :key="loc">
       <div class="header">
         {{ loc }}
