@@ -27,7 +27,7 @@
         class="btn danger"
         :style="{ 'margin-left': 'auto' }"
       >
-        Remove
+        Remove Tile
       </button>
     </div>
   </div>

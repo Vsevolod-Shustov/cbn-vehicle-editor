@@ -62,9 +62,14 @@ function handlePartClick(part: Part) {
   const tile = vehicleTiles.value.get(selectedTile.value)
   if (!tile) return
   if (tile.parts.get(location)) {
-    tile.parts.delete(location)
+    if (new Set(tile.parts.values()).has(part.id ?? '')) {
+      tile.parts.delete(location)
+    } else {
+      tile.parts.delete(location)
+      vehicleStore.addPart(selectedTile.value, location, part.id ?? '')
+    }
   } else {
-    vehicleStore.addPart(vehicleStore.selectedTile, location, part.id ?? '')
+    vehicleStore.addPart(selectedTile.value, location, part.id ?? '')
   }
 }
 </script>
@@ -94,9 +99,7 @@ function handlePartClick(part: Part) {
         :key="part.id"
         class="part"
         :class="{
-          installed:
-            selectedLocation == 'NO_LOCATION_FUCK_YOU' &&
-            vehicleTiles.get(selectedTile)?.parts.has(part.location ?? part.id ?? ''),
+          installed: new Set(vehicleTiles.get(selectedTile)?.parts.values()).has(part.id ?? ''),
         }"
         @click="handlePartClick(part)"
       >
