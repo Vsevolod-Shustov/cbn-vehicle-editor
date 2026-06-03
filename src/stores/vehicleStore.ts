@@ -20,27 +20,6 @@ export const useVehicleStore = defineStore('vehicle', () => {
           parts: new Map([['structure', 'frame_cross']]),
         },
       ],
-      [
-        '0 1',
-        {
-          id: '0 1',
-          parts: new Map([['structure', 'frame_cross']]),
-        },
-      ],
-      [
-        '1 0',
-        {
-          id: '1 0',
-          parts: new Map([['structure', 'frame_cross']]),
-        },
-      ],
-      [
-        '1 1',
-        {
-          id: '1 1',
-          parts: new Map([['structure', 'frame_cross']]),
-        },
-      ],
     ]),
   )
 
