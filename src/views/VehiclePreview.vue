@@ -1,5 +1,6 @@
 <template>
   <div class="vehiclePreview" ref="wrap">
+    <div id="center"></div>
     <div v-if="tilesetStore.loading"><Loading /></div>
     <div v-else-if="tilesetStore.error">Error: {{ tilesetStore.error }}</div>
     <template v-else>
@@ -126,29 +127,20 @@ function centerOnSelected() {
   if (!wrapEl || !gridEl) return
 
   const wrapRect = wrapEl.getBoundingClientRect()
-  const gridRect = gridEl.getBoundingClientRect()
-
-  // Center of selected tile in grid coordinates (pixel space)
-  const tileCenterX = sx * TILE + TILE / 2
-  const tileCenterY = sy * TILE + TILE / 2
+  // Tile center in grid-local space
+  const tileLocalX = (sx - minX.value) * TILE
+  const tileLocalY = (sy - minY.value) * TILE
+  const tileCenterX = tileLocalX + TILE / 2
+  const tileCenterY = tileLocalY + TILE / 2
 
   // Center of the wrap in global pixels
   const wrapCenterX = wrapRect.left + wrapRect.width / 2
   const wrapCenterY = wrapRect.top + wrapRect.height / 2
 
   // Offset to apply to grid so the tile center aligns with wrap center
-  // Convert grid's local (0,0) to wrap's center
-  const gridOriginX = gridRect.left
-  const gridOriginY = gridRect.top
-
-  // Desired top-left of grid so that tileCenter aligns with wrap center
-  const targetX = wrapCenterX - (tileCenterX - gridOriginX)
-  const targetY = wrapCenterY - (tileCenterY - gridOriginY)
-
-  // Since we apply transform on the grid, offset is the delta from 0,0
   offset.value = {
-    x: targetX - gridOriginX,
-    y: targetY - gridOriginY,
+    x: wrapCenterX - tileCenterX,
+    y: wrapCenterY - tileCenterY,
   }
 }
 
@@ -221,5 +213,13 @@ function confirmRemoveSelected() {
   left: 0.5rem;
   display: flex;
   width: calc(100% - 1rem);
+}
+#center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  background-color: red;
 }
 </style>
