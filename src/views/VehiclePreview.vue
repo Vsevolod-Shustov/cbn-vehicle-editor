@@ -221,5 +221,6 @@ function confirmRemoveSelected() {
   width: 1px;
   height: 1px;
   background-color: red;
+  display: none;
 }
 </style>
