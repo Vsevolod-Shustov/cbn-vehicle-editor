@@ -1,44 +1,61 @@
 <template>
   <div class="vehiclePreview" ref="wrap">
-    <section
-      class="game-grid"
-      :style="[gridStyle, { transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }]"
-      ref="grid"
-    >
-      <div
-        v-for="[coords, tile] in tileEntries"
-        :key="coords"
-        class="tile"
-        :class="{ selected: coords == selectedTile }"
-        :style="tileStyle(coords)"
-        @click="handleTileClick(coords)"
+    <div v-if="tilesetStore.loading"><Loading /></div>
+    <div v-else-if="tilesetStore.error">Error: {{ tilesetStore.error }}</div>
+    <template v-else>
+      <section
+        class="game-grid"
+        :style="[gridStyle, { transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }]"
+        ref="grid"
       >
-        <span class="coords">{{ coords }}</span>
-        <span class="parts-count">{{ tile.parts.size }}</span>
+        <div
+          v-for="[coords, tile] in tileEntries"
+          :key="coords"
+          class="tile"
+          :class="{ selected: coords == selectedTile }"
+          :style="tileStyle(coords)"
+          @click="handleTileClick(coords)"
+        >
+          <span class="coords">{{ coords }}</span>
+          <span class="parts-count">{{ tile.parts.size }}</span>
+        </div>
+      </section>
+      <div class="action-row">
+        <span>add tile</span>
+        <button @click.stop="addNeighbor('left')" class="btn">Left</button>
+        <button @click.stop="addNeighbor('right')" class="btn">Right</button>
+        <button @click.stop="addNeighbor('up')" class="btn">Up</button>
+        <button @click.stop="addNeighbor('down')" class="btn">Down</button>
+        <button
+          @click.stop="confirmRemoveSelected"
+          class="btn danger"
+          :style="{ 'margin-left': 'auto' }"
+        >
+          Remove Tile
+        </button>
       </div>
-    </section>
-    <div class="action-row">
-      <span>add tile</span>
-      <button @click.stop="addNeighbor('left')" class="btn">Left</button>
-      <button @click.stop="addNeighbor('right')" class="btn">Right</button>
-      <button @click.stop="addNeighbor('up')" class="btn">Up</button>
-      <button @click.stop="addNeighbor('down')" class="btn">Down</button>
-      <button
-        @click.stop="confirmRemoveSelected"
-        class="btn danger"
-        :style="{ 'margin-left': 'auto' }"
-      >
-        Remove Tile
-      </button>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useVehicleStore } from '@/stores/vehicleStore' // adjust path as needed
+import { useVehicleStore } from '@/stores/vehicleStore'
+import { useTilesetStore } from '@/stores/tilesetStore'
+import Loading from '@/components/Loading.vue'
 import { storeToRefs } from 'pinia'
+
+const tilesetStore = useTilesetStore()
+//console.log(tilesetStore.loadRawJson())
+console.log(tilesetStore.findFgById(tilesetStore.tilesConfig, 'bp_10mm_fmj'))
+//console.log(tilesetStore.tilesConfig)
+
+onMounted(() => {
+  if (tilesetStore.tilesConfig === null && !tilesetStore.loading) {
+    tilesetStore.loadRawJson()
+  }
+})
 
 // Pinia store that holds the vehicle tiles
 const store = useVehicleStore()
