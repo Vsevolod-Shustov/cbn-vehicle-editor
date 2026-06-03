@@ -12,7 +12,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: '/cbn-vehicle-editor/',
+  base: 'https://vsevolod-shustov.github.io/cbn-vehicle-editor/',
   build: {
     outDir: 'docs',
     emptyOutDir: true,
