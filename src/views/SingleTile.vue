@@ -13,7 +13,7 @@ const { vehicleName, vehicleId, vehicleTiles, selectedTile } = storeToRefs(vehic
 
 const exportVehicleJsonString = vehicleStore.exportVehicleJsonString
 const exportVehicleJson = vehicleStore.exportVehicleJson
-console.log(exportVehicleJson())
+//console.log(exportVehicleJson())
 const saveToLocalStorage = vehicleStore.saveToLocalStorage
 const loadFromLocalStorage = vehicleStore.loadFromLocalStorage
 

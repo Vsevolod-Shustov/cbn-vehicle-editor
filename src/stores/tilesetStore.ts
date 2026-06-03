@@ -1,11 +1,9 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-const BASE_URL =
-  'https://raw.githubusercontent.com/cataclysmbn/Cataclysm-BN/refs/heads/main/gfx/MSX%2B%2BUnDeadPeopleEdition/'
-
 export const useTilesetStore = defineStore('tileset', () => {
-  // State declarations (add to your store/script)
+  const BASE_URL =
+    'https://raw.githubusercontent.com/cataclysmbn/Cataclysm-BN/refs/heads/main/gfx/MSX%2B%2BUnDeadPeopleEdition/'
   const tilesConfig = ref<string | null>(null)
   const loading = ref<boolean>(false)
   const error = ref<string | null>(null)
@@ -30,27 +28,38 @@ export const useTilesetStore = defineStore('tileset', () => {
 
   /**
    * Recursively search a JSON structure for an object with a matching id
-   * and return its fg value (number) if found.
+   * and return its fg value (number) and the associated file (string) if found.
    * If not found, returns undefined.
    */
-  function findFgById(root: any, targetId: string): number | undefined {
-    const dfs = (node: any): number | undefined => {
+  type Result = { fg: number; file: string } | undefined
+
+  function findFgAndFileById(root: any, targetId: string): Result {
+    const dfs = (node: any, currentFile?: string): Result => {
       if (node && typeof node === 'object') {
+        // update current file if this node defines one
+        if (typeof node.file === 'string') {
+          currentFile = node.file
+        }
+
         // direct match at this node
         if ('id' in node && node.id === targetId && 'fg' in node) {
-          return node.fg as number
+          if (typeof node.fg === 'number' && typeof currentFile === 'string') {
+            return { fg: node.fg, file: currentFile }
+          }
+          // If fg exists but file isn't tracked yet, still return with undefined file
+          return typeof node.fg === 'number' ? { fg: node.fg, file: currentFile ?? '' } : undefined
         }
 
         // traverse arrays
         if (Array.isArray(node)) {
           for (const item of node) {
-            const v = dfs(item)
+            const v = dfs(item, currentFile)
             if (v !== undefined) return v
           }
         } else {
           // traverse object properties
           for (const key of Object.keys(node)) {
-            const v = dfs(node[key])
+            const v = dfs(node[key], currentFile)
             if (v !== undefined) return v
           }
         }
@@ -58,6 +67,7 @@ export const useTilesetStore = defineStore('tileset', () => {
       return undefined
     }
 
+    // start with no current file
     return dfs(root)
   }
 
@@ -65,7 +75,8 @@ export const useTilesetStore = defineStore('tileset', () => {
     tilesConfig,
     loading,
     error,
+    BASE_URL,
     loadRawJson,
-    findFgById,
+    findFgAndFileById,
   }
 })

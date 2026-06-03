@@ -13,7 +13,7 @@
           :key="coords"
           class="tile"
           :class="{ selected: coords == selectedTile }"
-          :style="tileStyle(coords)"
+          :style="tileStyle(tile, coords)"
           @click="handleTileClick(coords)"
         >
           <span class="coords">{{ coords }}</span>
@@ -47,8 +47,9 @@ import Loading from '@/components/Loading.vue'
 import { storeToRefs } from 'pinia'
 
 const tilesetStore = useTilesetStore()
+const BASE_URL = tilesetStore.BASE_URL
 //console.log(tilesetStore.loadRawJson())
-console.log(tilesetStore.findFgById(tilesetStore.tilesConfig, 'bp_10mm_fmj'))
+//console.log(tilesetStore.findFgAndFileById(tilesetStore.tilesConfig, 'bp_10mm_fmj'))
 //console.log(tilesetStore.tilesConfig)
 
 onMounted(() => {
@@ -92,7 +93,27 @@ const gridStyle = computed<CSSProperties>(() => ({
   overflow: 'hidden',
 }))
 
-const tileStyle = (coords: string): CSSProperties => {
+function getSpriteCss(index: number, url: string) {
+  const tile = 32 // sprite size in px
+  const cols = 16 // sprites per row
+  const row = Math.floor(index / cols)
+  const col = index % cols
+
+  // const x = col * tile
+  // const y = row * tile
+  const x = 0
+  const y = 0
+
+  return {
+    'background-image': `url('${url}')`,
+    'background-position': `${x}px ${y}px`,
+    width: `${tile}px`,
+    height: `${tile}px`,
+    'background-repeat': 'no-repeat',
+  }
+}
+
+const tileStyle = (tile: any, coords: string): CSSProperties => {
   const parts = coords.split(' ')
   const x = Number(parts[0] ?? 0)
   const y = Number(parts[1] ?? 0)
@@ -101,7 +122,38 @@ const tileStyle = (coords: string): CSSProperties => {
   const sx = (x - minX.value) * TILE
   const sy = (y - minY.value) * TILE
 
+  let background = null
+  if (!tilesetStore.loading) {
+    if (tile.parts.get('structure')) {
+      console.log('tilesConfig:')
+      console.log(tilesetStore.tilesConfig)
+      console.log('------')
+      //console.log('tile id:')
+      // console.log(tile.id)
+      // console.log('------')
+      console.log('part id:')
+      console.log(tile.parts.get('structure'))
+      console.log('------')
+      const result = tilesetStore.findFgAndFileById(
+        tilesetStore.tilesConfig,
+        'vp_' + tile.parts.get('structure'),
+      )
+      if (result) {
+        const { fg, file } = result
+        background = getSpriteCss(fg, BASE_URL + file)
+        console.log(background)
+      } else {
+        console.log('error destructuring result of findFgAndFileById')
+        console.log('------')
+      }
+    }
+  }
+  //console.log(tile.parts)
+
   return {
+    backgroundImage: background?.['background-image'],
+    backgroundPosition: background?.['background-position'],
+    backgroundRepeat: background?.['background-repeat'],
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',

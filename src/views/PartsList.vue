@@ -10,7 +10,7 @@ const vehicleStore = useVehicleStore()
 
 const locationList = vehiclePartsStore.partLocations ?? null
 locationList?.add('NO_LOCATION_FUCK_YOU')
-console.log(locationList)
+//console.log(locationList)
 
 const { vehicleTiles, selectedTile } = storeToRefs(vehicleStore)
 const selectedLocation = ref<string | null>(null)
@@ -29,7 +29,7 @@ function checkInstalledInLocation(location: string) {
 }
 
 const filteredParts = computed(() => {
-  console.log('selectedLocation.value: ' + selectedLocation.value)
+  //console.log('selectedLocation.value: ' + selectedLocation.value)
 
   if (!vehiclePartsStore.data || vehiclePartsStore.data.length === 0) return []
 
