@@ -62,7 +62,6 @@ function exportToClipboard() {
 <style scoped>
 .singleTile {
   flex: 0 1 300px;
-  height: 100vh;
   overflow-y: scroll;
 }
 .location {

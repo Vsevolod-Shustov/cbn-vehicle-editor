@@ -184,6 +184,7 @@ function confirmRemoveSelected() {
 .vehiclePreview {
   flex: 1 1 auto;
   position: relative;
+  min-height: 50vh;
 }
 .tile {
   border: 1px solid #2c2c2c;

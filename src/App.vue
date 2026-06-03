@@ -28,12 +28,14 @@ onMounted(() => {
 </template>
 
 <style scoped>
-main {
-  display: flex;
-}
-main > * {
-  flex: 1 1 auto;
-  height: 100vh;
-  padding: 0.5rem;
+@media screen and (min-width: 960px) {
+  main {
+    display: flex;
+  }
+  main > * {
+    flex: 1 1 auto;
+    height: 100vh;
+    padding: 0.5rem;
+  }
 }
 </style>
