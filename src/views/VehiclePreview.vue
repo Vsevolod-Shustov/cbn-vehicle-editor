@@ -18,6 +18,7 @@
       </div>
     </section>
     <div class="action-row">
+      <span>add tile</span>
       <button @click.stop="addNeighbor('left')" class="btn">Left</button>
       <button @click.stop="addNeighbor('right')" class="btn">Right</button>
       <button @click.stop="addNeighbor('up')" class="btn">Up</button>
@@ -199,9 +200,9 @@ function confirmRemoveSelected() {
 }
 .action-row {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0.5rem;
+  left: 0.5rem;
   display: flex;
-  width: 100%;
+  width: calc(100% - 1rem);
 }
 </style>

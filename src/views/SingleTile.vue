@@ -9,7 +9,11 @@ const vehicleStore = useVehicleStore()
 
 const locations = vehiclePartsStore.partLocations
 
-const { vehicleTiles, selectedTile } = storeToRefs(vehicleStore)
+const { vehicleName, vehicleId, vehicleTiles, selectedTile } = storeToRefs(vehicleStore)
+
+const exportVehicleJsonString = vehicleStore.exportVehicleJsonString
+const exportVehicleJson = vehicleStore.exportVehicleJson
+console.log(exportVehicleJson())
 
 const nonEmptyLocations = computed(() => {
   const partsMap = vehicleTiles.value.get(selectedTile.value)?.parts
@@ -22,12 +26,22 @@ const removePart = (tileKey: string, location: string) => {
   if (!tile) return
   tile.parts.delete(location)
 }
+
+function exportToClipboard() {
+  navigator.clipboard.writeText(JSON.stringify(exportVehicleJson()))
+}
 </script>
 
 <template>
   <div class="singleTile">
     <div class="actions">
-      <span>Selected tile: {{ selectedTile }}</span>
+      <div class="info">
+        <label for="vehicleName"><span>Name</span></label>
+        <input type="text" id="vehicleName" v-model="vehicleName" />
+        <label for="vehicleId"><span>Id</span></label>
+        <input type="text" id="vehicleId" v-model="vehicleId" />
+      </div>
+      <button @click="exportToClipboard">export to clipboard</button>
     </div>
     <div class="location" v-for="loc in nonEmptyLocations" :key="loc">
       <div class="header">
@@ -49,7 +63,7 @@ const removePart = (tileKey: string, location: string) => {
 }
 .location {
   list-style: none;
-  margin: 2px 4px 8px;
+  margin: 2px 0 8px;
   padding: 2px 4px;
   border: 1px solid black;
   border-radius: 4px;
@@ -65,8 +79,8 @@ button {
 .location:has(.empty) {
   opacity: 33%;
 }
-.actions {
-  display: flex;
-  justify-content: space-between;
+.info {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
 }
 </style>

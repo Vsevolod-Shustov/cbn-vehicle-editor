@@ -34,5 +34,6 @@ main {
 main > * {
   flex: 1 1 auto;
   height: 100vh;
+  padding: 0.5rem;
 }
 </style>
