@@ -14,6 +14,8 @@ const { vehicleName, vehicleId, vehicleTiles, selectedTile } = storeToRefs(vehic
 const exportVehicleJsonString = vehicleStore.exportVehicleJsonString
 const exportVehicleJson = vehicleStore.exportVehicleJson
 console.log(exportVehicleJson())
+const saveToLocalStorage = vehicleStore.saveToLocalStorage
+const loadFromLocalStorage = vehicleStore.loadFromLocalStorage
 
 const nonEmptyLocations = computed(() => {
   const partsMap = vehicleTiles.value.get(selectedTile.value)?.parts
@@ -41,6 +43,8 @@ function exportToClipboard() {
         <label for="vehicleId"><span>Id</span></label>
         <input type="text" id="vehicleId" v-model="vehicleId" />
       </div>
+      <button @click="saveToLocalStorage">save</button>
+      <button @click="loadFromLocalStorage">load</button>
       <button @click="exportToClipboard">export to clipboard</button>
     </div>
     <div class="location" v-for="loc in nonEmptyLocations" :key="loc">

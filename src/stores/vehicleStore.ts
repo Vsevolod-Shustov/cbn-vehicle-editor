@@ -103,36 +103,6 @@ export const useVehicleStore = defineStore('vehicle', () => {
     }
   }
 
-  // Helper: compute grid bounds for blueprint
-  const computeBounds = (): { minX: number; maxX: number; minY: number; maxY: number } => {
-    let minX = Number.POSITIVE_INFINITY
-    let maxX = Number.NEGATIVE_INFINITY
-    let minY = Number.POSITIVE_INFINITY
-    let maxY = Number.NEGATIVE_INFINITY
-
-    vehicleTiles.value.forEach((_tile, key) => {
-      const [xRaw, yRaw] = key.split(' ')
-      const x = Number(xRaw)
-      const y = Number(yRaw)
-      if (Number.isFinite(x)) {
-        minX = Math.min(minX, x)
-        maxX = Math.max(maxX, x)
-      }
-      if (Number.isFinite(y)) {
-        minY = Math.min(minY, y)
-        maxY = Math.max(maxY, y)
-      }
-    })
-
-    // defaults if no tiles
-    if (!Number.isFinite(minX)) minX = 0
-    if (!Number.isFinite(maxX)) maxX = 0
-    if (!Number.isFinite(minY)) minY = 0
-    if (!Number.isFinite(maxY)) maxY = 0
-
-    return { minX, maxX, minY, maxY }
-  }
-
   // 1) Get vehicle JSON object (not stringified)
   const getVehicleJson = (): any => {
     // Build parts array from tiles
@@ -162,6 +132,73 @@ export const useVehicleStore = defineStore('vehicle', () => {
   // Optional: export as raw JSON object (useful for further processing)
   const exportVehicleJson = (): any => getVehicleJson()
 
+  const LOCAL_KEY = 'cbn_vehicle_save'
+
+  // Prepare a serializable snapshot of the current state
+  const snapshot = (): any => {
+    // Convert Map<string, VehicleTile> to a plain array for JSON
+    const tiles = Array.from(vehicleTiles.value.entries()).map(([key, tile]) => {
+      return {
+        key,
+        id: tile.id,
+        parts: Array.from(tile.parts.entries()), // [[location, partId], ...]
+      }
+    })
+
+    return {
+      name: vehicleName.value,
+      id: vehicleId.value,
+      selectedTile: selectedTile.value,
+      tiles,
+    }
+  }
+
+  // Restore from a plain snapshot
+  const hydrate = (data: any) => {
+    if (!data) return
+
+    if (data.name !== undefined) vehicleName.value = data.name
+    if (data.id !== undefined) vehicleId.value = data.id
+    if (data.selectedTile !== undefined) selectedTile.value = data.selectedTile
+
+    // Rebuild vehicleTiles Map from tiles array
+    const map = new Map<string, VehicleTile>()
+    if (Array.isArray(data.tiles)) {
+      data.tiles.forEach((t: any) => {
+        const m = new Map<string, string>(t.parts ?? [])
+        map.set(t.key, { id: t.key, parts: m })
+      })
+    }
+    vehicleTiles.value = map
+  }
+
+  // Save current state to localStorage
+  const saveToLocalStorage = (): void => {
+    console.log('attempting to save to local storage')
+    try {
+      const data = snapshot()
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(data))
+      // Optional: signal success
+      console.log('saved to local storage')
+    } catch (e) {
+      console.error('Failed to save vehicle to localStorage', e)
+    }
+  }
+
+  // Load state from localStorage
+  const loadFromLocalStorage = (): void => {
+    console.log('attempting to load from local storage')
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY)
+      if (!raw) return
+      const data = JSON.parse(raw)
+      hydrate(data)
+      console.log('loaded from local storage')
+    } catch (e) {
+      console.error('Failed to load vehicle from localStorage', e)
+    }
+  }
+
   return {
     vehicleName,
     vehicleId,
@@ -173,5 +210,7 @@ export const useVehicleStore = defineStore('vehicle', () => {
     removeTile,
     exportVehicleJsonString,
     exportVehicleJson,
+    saveToLocalStorage,
+    loadFromLocalStorage,
   }
 })
